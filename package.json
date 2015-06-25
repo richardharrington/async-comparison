@@ -1,0 +1,30 @@
+{
+  "name": "async-examples",
+  "version": "0.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "gulp"
+  },
+  "author": "Richard Harrington",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "jspm": "~0.15.7",
+    "gulp": "~3.9.0",
+    "browser-sync": "~2.7.12"
+  },
+  "jspm": {
+    "directories": {
+      "baseURL": "src"
+    },
+    "dependencies": {
+      "js-csp": "npm:js-csp@^0.4.1"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.4.3",
+      "babel-runtime": "npm:babel-runtime@^5.4.3",
+      "core-js": "npm:core-js@^0.9.10"
+    }
+  }
+}
