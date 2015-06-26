@@ -1,12 +1,13 @@
 import csp from 'js-csp';
-import callbacks from 'callbacks';
-import promises from 'promises';
-import cspVersion from 'csp';
+
+import callbacksVersion from 'callbacksVersion';
+import promisesVersion from 'promisesVersion';
+import cspVersion from 'cspVersion';
 
 const log = console.log.bind(console);
 
-callbacks.fetchMovies(movie => log("callbacks:", movie));
-promises.fetchMovies().then(movie => log("promises:", movie));
+callbacksVersion.fetchMovies(movie => log("callbacks:", movie));
+promisesVersion.fetchMovies().then(movie => log("promises:", movie));
 csp.go(function*() {
   log("csp:", yield cspVersion.fetchMovies());
 });
