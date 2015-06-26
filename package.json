@@ -5,13 +5,12 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "gulp"
+    "start": "browser-sync start --files 'src/index.html,src/*.js' --server 'src'"
   },
   "author": "Richard Harrington",
   "license": "BSD-2-Clause",
   "devDependencies": {
     "jspm": "~0.15.7",
-    "gulp": "~3.9.0",
     "browser-sync": "~2.7.12"
   },
   "jspm": {
