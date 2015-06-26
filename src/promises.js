@@ -26,40 +26,43 @@ function parallelGet(routes) {
 }
 
 function fetchMovies() {
-  const getMovieSearchPath = () => {
+
+  function getMoviePaths() {
     return new Promise(resolve => {
-      get(randomWordEndpoint).then(response => {
-        const [{word}] = response;
+      get(randomWordEndpoint).then(([{word}]) => {
         const encodedWord = encodeURIComponent(word);
-        const searchPath = movieSearchEndpoint + encodedWord;
-        resolve(searchPath, word);
+        const movieSearchPath = movieSearchEndpoint + encodedWord;
+        get(movieSearchPath).then(({Search: movieStubs, Error: err}) => {
+          if (err) {
+            // try again; probably too obscure of a word
+            getMoviePaths().then(resolve);
+          }
+          else {
+            const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
+            const moviePaths = movieIds.map(id => movieEndpoint + id);
+            resolve({word, moviePaths});
+          }
+        })
       });
     });
-  };
-  const getMoviePaths = (searchPath, word) => {
-    return new Promise(resolve => {
-      get(searchPath).then(response => {
-        const {Search: movieStubs, Error: err} = response;
-        if (err) {
-          fetchMovies().then(resolve);
-        }
-        else {
-          const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
-          const moviePaths = movieIds.map(id => "http://www.omdbapi.com/?i=" + id);
-          resolve(moviePaths, word);
-        }
-      });
-    });
-  };
-  const getMovies = (moviePaths, word) => {
+  }
+
+  function getMovies({word, moviePaths}) {
     return new Promise(resolve => {
       parallelGet(moviePaths).then(response => {
         const movies = response;
         resolve({word, movies});
       });
     });
-  };
-  return getMovieSearchPath().then(getMoviePaths).then(getMovies);
+  }
+
+  return new Promise(resolve => {
+    getMoviePaths().then(response => {
+      getMovies(response).then(response => {
+        resolve(response);
+      });
+    });
+  });
 }
 
 export default { fetchMovies };

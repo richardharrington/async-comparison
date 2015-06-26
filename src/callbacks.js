@@ -35,11 +35,9 @@ function parallelGet(routes, callback) {
 }
 
 function fetchMovies(callback) {
-  get(randomWordEndpoint, (response => {
-    const [{word}] = response;
-    const encodedWord = encodeURIComponent(word);
-    get(movieSearchEndpoint + encodedWord, (response => {
-      const {Search: movieStubs, Error: err} = response;
+  get(randomWordEndpoint, (([{word}]) => {
+    const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
+    get(movieSearchPath, (({Search: movieStubs, Error: err}) => {
       if (err) {
         // try again; probably too obscure of a word
         fetchMovies(callback);
