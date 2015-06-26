@@ -35,12 +35,10 @@ function fetchMovies() {
       // try again; probably too obscure of a word
       return yield fetchMovies();
     }
-    else {
-      const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
-      const moviePaths = movieIds.map(id => movieEndpoint + id);
-      const movies = yield parallelGet(moviePaths);
-      return {word, movies};
-    }
+    const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
+    const moviePaths = movieIds.map(id => movieEndpoint + id);
+    const movies = yield parallelGet(moviePaths);
+    return {word, movies};
   });
 }
 
