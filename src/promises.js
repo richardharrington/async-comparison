@@ -1,14 +1,10 @@
 import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'routes';
 
-function responseHandler(req, resolve) {
+function responseHandler(req, callback) {
   return () => {
-    if (req.status >= 200 && req.status < 400) {
-      let response = JSON.parse(req.response);
-      resolve(response);
-    }
-    else {
-      resolve({Error: "bad things"});
-    }
+    const success = (req.status >= 200 && req.status < 400);
+    const response = success ? JSON.parse(req.response) : {Error: "bad things"};
+    callback(response);
   }
 }
 
@@ -26,41 +22,22 @@ function parallelGet(routes) {
 }
 
 function fetchMovies() {
-
-  function getMoviePaths() {
-    return new Promise(resolve => {
-      get(randomWordEndpoint).then(([{word}]) => {
-        const encodedWord = encodeURIComponent(word);
-        const movieSearchPath = movieSearchEndpoint + encodedWord;
-        get(movieSearchPath).then(({Search: movieStubs, Error: err}) => {
-          if (err) {
-            // try again; probably too obscure of a word
-            getMoviePaths().then(resolve);
-          }
-          else {
-            const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
-            const moviePaths = movieIds.map(id => movieEndpoint + id);
-            resolve({word, moviePaths});
-          }
-        })
-      });
-    });
-  }
-
-  function getMovies({word, moviePaths}) {
-    return new Promise(resolve => {
-      parallelGet(moviePaths).then(response => {
-        const movies = response;
-        resolve({word, movies});
-      });
-    });
-  }
-
   return new Promise(resolve => {
-    getMoviePaths().then(response => {
-      getMovies(response).then(response => {
-        resolve(response);
-      });
+    get(randomWordEndpoint).then(([{word}]) => {
+      const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
+      get(movieSearchPath).then(({Search: movieStubs, Error: err}) => {
+        if (err) {
+          // try again; probably too obscure of a word
+          fetchMovies().then(resolve);
+        }
+        else {
+          const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
+          const moviePaths = movieIds.map(id => movieEndpoint + id);
+          parallelGet(moviePaths).then(movies => {
+            resolve({word, movies});
+          });
+        }
+      })
     });
   });
 }

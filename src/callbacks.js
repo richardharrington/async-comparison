@@ -2,14 +2,9 @@ import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'routes';
 
 function responseHandler(req, callback) {
   return () => {
-    if (req.status >= 200 && req.status < 400) {
-      const response = JSON.parse(req.response);
-      callback(response);
-    }
-    else {
-
-      callback({Error: "bad things"});
-    }
+    const success = (req.status >= 200 && req.status < 400);
+    const response = success ? JSON.parse(req.response) : {Error: "bad things"};
+    callback(response);
   }
 }
 
@@ -45,8 +40,7 @@ function fetchMovies(callback) {
       else {
         const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
         const routes = movieIds.map(id => "http://www.omdbapi.com/?i=" + id);
-        parallelGet(routes, (response => {
-          const movies = response;
+        parallelGet(routes, (movies => {
           callback({word, movies});
         }));
       }
