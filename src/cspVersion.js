@@ -1,10 +1,10 @@
 import csp from 'js-csp';
-import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'routes';
+import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'endpoints';
 
-function get(route) {
+function get(url) {
   const outChan = csp.chan();
   const req = new XMLHttpRequest();
-  req.open('GET', route, true);
+  req.open('GET', url, true);
   req.onload = () => {
     csp.go(function*() {
       const response = JSON.parse(req.response);
@@ -16,45 +16,44 @@ function get(route) {
   return outChan;
 }
 
-function parallelGet(routes) {
+function getParallel(urls) {
   const {into, merge} = csp.operations;
-  return into([], merge(routes.map(get)));
+  return into([], merge(urls.map(get)));
 }
 
-function getRandomWord() {
+function fetchRandomWord() {
   return csp.go(function*() {
     const [{word}] = yield get(randomWordEndpoint);
     return word;
   });
 }
 
-function getMovieStubs(word) {
+function fetchMovieStubsFromSearch(word) {
   return csp.go(function*() {
-    const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
-    const {Search: movieStubs} = yield get(movieSearchPath);
+    const url = movieSearchEndpoint + encodeURIComponent(word);
+    const {Search: movieStubs} = yield get(url);
     return movieStubs;
   });
 }
 
-function getMovies(movieStubs) {
-  return csp.go(function*() {
-    const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
-    return yield parallelGet(moviePaths);
-  });
+function fetchMovies(movieStubs) {
+  const urls = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
+  return getParallel(urls);
 }
 
-function fetchMovies() {
+function launchMovieSearch() {
   return csp.go(function*() {
-    const word = yield getRandomWord();
-    const movieStubs = yield getMovieStubs(word);
+    const word = yield fetchRandomWord();
+    const movieStubs = yield fetchMovieStubsFromSearch(word);
     if (movieStubs) {
-      const movies = yield getMovies(movieStubs);
-      return {word, movies};
+      const movies = yield fetchMovies(movieStubs);
+      const finalResults = {word, movies};
+      return finalResults;
     }
     else {
-      return yield fetchMovies();
+      return yield launchMovieSearch();
     }
   });
 }
 
-export default { fetchMovies };
+export default { launchMovieSearch };

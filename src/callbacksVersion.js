@@ -1,8 +1,8 @@
-import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'routes';
+import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'endpoints';
 
-function get(route, callback) {
+function get(url, callback) {
   const req = new XMLHttpRequest();
-  req.open('GET', route, true);
+  req.open('GET', url, true);
   req.onload = () => {
     const response = JSON.parse(req.response);
     callback(response);
@@ -10,11 +10,11 @@ function get(route, callback) {
   req.send();
 }
 
-function parallelGet(routes, callback) {
-  let counter = routes.length;
+function getParallel(urls, callback) {
+  let counter = urls.length;
   let responses = [];
-  routes.forEach(route =>
-    get(route, (response) => {
+  urls.forEach(url =>
+    get(url, (response) => {
       responses.push(response);
       counter--;
       if (counter === 0) {
@@ -24,32 +24,32 @@ function parallelGet(routes, callback) {
   );
 }
 
-function getRandomWord(callback) {
+function fetchRandomWord(callback) {
   get(randomWordEndpoint, ([{word}]) => callback(word));
 }
 
-function getMovieStubs(word, callback) {
-  const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
-  get(movieSearchPath, ({Search: movieStubs}) => callback(movieStubs));
+function fetchMovieStubsFromSearch(word, callback) {
+  const url = movieSearchEndpoint + encodeURIComponent(word);
+  get(url, ({Search: movieStubs}) => callback(movieStubs));
 }
 
-function getMovies(movieStubs, callback) {
-  const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
-  parallelGet(moviePaths, callback);
+function fetchMovies(movieStubs, callback) {
+  const urls = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
+  getParallel(urls, callback);
 }
 
-function fetchMovies(callback) {
-  getRandomWord(word => {
-    getMovieStubs(word, movieStubs => {
+function launchMovieSearch(callback) {
+  fetchRandomWord(word => {
+    fetchMovieStubsFromSearch(word, movieStubs => {
       if (movieStubs) {
         const callbackFinalResults = movies => callback({word, movies});
-        getMovies(movieStubs, callbackFinalResults);
+        fetchMovies(movieStubs, callbackFinalResults);
       }
       else {
-        fetchMovies(callback);
+        launchMovieSearch(callback);
       }
     });
   });
 }
 
-export default { fetchMovies };
+export default { launchMovieSearch };

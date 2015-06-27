@@ -1,9 +1,9 @@
-import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'routes';
+import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'endpoints';
 
-function get(route) {
+function get(url) {
   return new Promise(resolve => {
     const req = new XMLHttpRequest();
-    req.open('GET', route, true);
+    req.open('GET', url, true);
     req.onload = () => {
       const response = JSON.parse(req.response);
       resolve(response);
@@ -12,36 +12,36 @@ function get(route) {
   });
 }
 
-function parallelGet(routes) {
-  return Promise.all(routes.map(get));
+function getParallel(urls) {
+  return Promise.all(urls.map(get));
 }
 
-function getRandomWord() {
+function fetchRandomWord() {
   return get(randomWordEndpoint).then(([{word}]) => word);
 }
-function getMovieStubs(word) {
-  const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
-  return get(movieSearchPath).then(({Search: movieStubs}) => movieStubs);
+function fetchMovieStubsFromSearch(word) {
+  const url = movieSearchEndpoint + encodeURIComponent(word);
+  return get(url).then(({Search: movieStubs}) => movieStubs);
 }
-function getMovies(movieStubs) {
-  const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
-  return parallelGet(moviePaths);
+function fetchMovies(movieStubs) {
+  const urls = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
+  return getParallel(urls);
 }
 
-function fetchMovies() {
+function launchMovieSearch() {
   return new Promise(resolve => {
-    return getRandomWord().then(word => {
-      getMovieStubs(word).then(movieStubs => {
+    return fetchRandomWord().then(word => {
+      fetchMovieStubsFromSearch(word).then(movieStubs => {
         if (movieStubs) {
           const generateFinalResults = movies => ({word, movies});
-          getMovies(movieStubs).then(generateFinalResults).then(resolve);
+          fetchMovies(movieStubs).then(generateFinalResults).then(resolve);
         }
         else {
-          fetchMovies().then(resolve);
+          launchMovieSearch().then(resolve);
         }
       });
     });
   });
 }
 
-export default { fetchMovies };
+export default { launchMovieSearch };
