@@ -1,18 +1,13 @@
 import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'routes';
 
-function responseHandler(req, callback) {
-  return () => {
-    const success = (req.status >= 200 && req.status < 400);
-    const response = success ? JSON.parse(req.response) : {Error: "bad things"};
-    callback(response);
-  }
-}
-
 function get(route) {
   return new Promise(resolve => {
     const req = new XMLHttpRequest();
     req.open('GET', route, true);
-    req.onload = responseHandler(req, resolve);
+    req.onload = () => {
+      const response = JSON.parse(req.response);
+      resolve(response);
+    };
     req.send();
   });
 }
