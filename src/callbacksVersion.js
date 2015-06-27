@@ -38,9 +38,8 @@ function fetchMovies(callback) {
         fetchMovies(callback);
       }
       else {
-        const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
-        const routes = movieIds.map(id => "http://www.omdbapi.com/?i=" + id);
-        parallelGet(routes, (movies => {
+        const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
+        parallelGet(moviePaths, (movies => {
           callback({word, movies});
         }));
       }

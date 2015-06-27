@@ -35,8 +35,7 @@ function fetchMovies() {
       // try again; probably too obscure of a word
       return yield fetchMovies();
     }
-    const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
-    const moviePaths = movieIds.map(id => movieEndpoint + id);
+    const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
     const movies = yield parallelGet(moviePaths);
     return {word, movies};
   });
