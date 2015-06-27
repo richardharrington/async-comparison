@@ -24,22 +24,35 @@ function parallelGet(routes, callback) {
   );
 }
 
+function getRandomWord(callback) {
+  get(randomWordEndpoint, ([{word}]) => callback(word));
+}
+
+function getMovieStubs(word, callback) {
+  const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
+  get(movieSearchPath, ({Search: movieStubs}) => callback(movieStubs));
+}
+
+function getMovies(movieStubs, callback) {
+  const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
+  parallelGet(moviePaths, callback);
+}
+
+function includeWordWithResults(word, callback) {
+  return (movies) => callback({word, movies});
+}
+
 function fetchMovies(callback) {
-  get(randomWordEndpoint, (([{word}]) => {
-    const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
-    get(movieSearchPath, (({Search: movieStubs, Error: err}) => {
-      if (err) {
-        // try again; probably too obscure of a word
-        fetchMovies(callback);
+  getRandomWord(word => {
+    getMovieStubs(word, movieStubs => {
+      if (movieStubs) {
+        getMovies(movieStubs, includeWordWithResults(word, callback));
       }
       else {
-        const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
-        parallelGet(moviePaths, (movies => {
-          callback({word, movies});
-        }));
+        fetchMovies(callback);
       }
-    }));
-  }));
+    });
+  });
 }
 
 export default { fetchMovies };
