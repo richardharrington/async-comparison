@@ -29,7 +29,7 @@ function getMovies(movieStubs) {
 }
 
 function includeWordWithResults(word) {
-  return (movies) => ({word, movies});
+  return movies => ({word, movies});
 }
 
 function fetchMovies() {
@@ -47,26 +47,4 @@ function fetchMovies() {
   });
 }
 
-function fetchMoviesOld() {
-  return new Promise(resolve => {
-    get(randomWordEndpoint).then(([{word}]) => {
-      const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
-      get(movieSearchPath).then(({Search: movieStubs, Error: err}) => {
-        if (err) {
-          // try again; probably too obscure of a word
-          fetchMoviesOld().then(resolve);
-        }
-        else {
-          const movieIds = movieStubs.map(movieStub => movieStub.imdbID);
-          const moviePaths = movieIds.map(id => movieEndpoint + id);
-          parallelGet(moviePaths).then(movies => {
-            resolve({word, movies});
-          });
-        }
-      })
-    });
-  });
-}
-
-
-export default { fetchMovies, fetchMoviesOld };
+export default { fetchMovies };

@@ -39,7 +39,7 @@ function getMovies(movieStubs, callback) {
 }
 
 function includeWordWithResults(word, callback) {
-  return (movies) => callback({word, movies});
+  return movies => callback({word, movies});
 }
 
 function fetchMovies(callback) {
