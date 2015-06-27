@@ -21,18 +21,39 @@ function parallelGet(routes) {
   return into([], merge(routes.map(get)));
 }
 
-function fetchMovies() {
+function getRandomWord() {
   return csp.go(function*() {
     const [{word}] = yield get(randomWordEndpoint);
+    return word;
+  });
+}
+
+function getMovieStubs(word) {
+  return csp.go(function*() {
     const movieSearchPath = movieSearchEndpoint + encodeURIComponent(word);
-    const {Search: movieStubs, Error: err} = yield get(movieSearchPath);
-    if (err) {
-      // try again; probably too obscure of a word
+    const {Search: movieStubs} = yield get(movieSearchPath);
+    return movieStubs;
+  });
+}
+
+function getMovies(movieStubs) {
+  return csp.go(function*() {
+    const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
+    return yield parallelGet(moviePaths);
+  });
+}
+
+function fetchMovies() {
+  return csp.go(function*() {
+    const word = yield getRandomWord();
+    const movieStubs = yield getMovieStubs(word);
+    if (movieStubs) {
+      const movies = yield getMovies(movieStubs);
+      return {word, movies};
+    }
+    else {
       return yield fetchMovies();
     }
-    const moviePaths = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
-    const movies = yield parallelGet(moviePaths);
-    return {word, movies};
   });
 }
 
