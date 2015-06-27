@@ -38,15 +38,12 @@ function getMovies(movieStubs, callback) {
   parallelGet(moviePaths, callback);
 }
 
-function includeWordWithResults(word, callback) {
-  return movies => callback({word, movies});
-}
-
 function fetchMovies(callback) {
   getRandomWord(word => {
     getMovieStubs(word, movieStubs => {
       if (movieStubs) {
-        getMovies(movieStubs, includeWordWithResults(word, callback));
+        const callbackFinalResults = movies => callback({word, movies});
+        getMovies(movieStubs, callbackFinalResults);
       }
       else {
         fetchMovies(callback);

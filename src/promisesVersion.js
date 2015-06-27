@@ -28,16 +28,13 @@ function getMovies(movieStubs) {
   return parallelGet(moviePaths);
 }
 
-function includeWordWithResults(word) {
-  return movies => ({word, movies});
-}
-
 function fetchMovies() {
   return new Promise(resolve => {
     return getRandomWord().then(word => {
       getMovieStubs(word).then(movieStubs => {
         if (movieStubs) {
-          getMovies(movieStubs).then(includeWordWithResults(word)).then(resolve);
+          const generateFinalResults = movies => ({word, movies});
+          getMovies(movieStubs).then(generateFinalResults).then(resolve);
         }
         else {
           fetchMovies().then(resolve);
