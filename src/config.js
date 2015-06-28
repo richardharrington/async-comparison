@@ -3,7 +3,8 @@ System.config({
   "transpiler": "babel",
   "babelOptions": {
     "optional": [
-      "runtime"
+      "runtime",
+      "es7.asyncFunctions"
     ]
   },
   "paths": {
