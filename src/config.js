@@ -18,6 +18,7 @@ System.config({
   "map": {
     "babel": "npm:babel-core@5.6.4",
     "babel-runtime": "npm:babel-runtime@5.6.4",
+    "co": "npm:co@4.5.4",
     "core-js": "npm:core-js@0.9.18",
     "js-csp": "npm:js-csp@0.4.1",
     "github:jspm/nodelibs-process@0.1.1": {

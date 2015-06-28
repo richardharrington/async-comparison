@@ -18,6 +18,7 @@
       "baseURL": "src"
     },
     "dependencies": {
+      "co": "npm:co@^4.5.4",
       "js-csp": "npm:js-csp@^0.4.1"
     },
     "devDependencies": {
