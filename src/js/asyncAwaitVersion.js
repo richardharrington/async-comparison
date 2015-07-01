@@ -1,4 +1,4 @@
-import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'endpoints';
+import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'js/endpoints';
 
 function get(url) {
   return new Promise(resolve => {

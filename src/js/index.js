@@ -1,11 +1,11 @@
 import csp from 'js-csp';
 import co from 'co';
 
-import callbacksVersion from 'callbacksVersion';
-import promisesVersion from 'promisesVersion';
-import cspVersion from 'cspVersion';
-import coVersion from 'coVersion';
-import asyncAwaitVersion from 'asyncAwaitVersion';
+import callbacksVersion from 'js/callbacksVersion';
+import promisesVersion from 'js/promisesVersion';
+import cspVersion from 'js/cspVersion';
+import coVersion from 'js/coVersion';
+import asyncAwaitVersion from 'js/asyncAwaitVersion';
 
 const log = console.log.bind(console);
 

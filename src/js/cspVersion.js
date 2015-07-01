@@ -1,34 +1,35 @@
-import co from 'co';
-
-import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'endpoints';
+import csp from 'js-csp';
+import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'js/endpoints';
 
 function get(url) {
-  return new Promise(resolve => {
-    const req = new XMLHttpRequest();
-    req.open('GET', url, true);
-    req.onload = () => {
+  const outChan = csp.chan();
+  const req = new XMLHttpRequest();
+  req.open('GET', url, true);
+  req.onload = () => {
+    csp.go(function*() {
       const response = JSON.parse(req.response);
-      resolve(response);
-    };
-    req.send();
-  });
+      yield csp.put(outChan, response);
+      outChan.close();
+    })
+  };
+  req.send();
+  return outChan;
 }
 
 function getParallel(urls) {
-  return co(function*() {
-    return yield urls.map(get);
-  });
+  const {into, merge} = csp.operations;
+  return into([], merge(urls.map(get)));
 }
 
 function fetchRandomWord() {
-  return co(function*() {
+  return csp.go(function*() {
     const [{word}] = yield get(randomWordEndpoint);
     return word;
   });
 }
 
 function fetchMovieStubsFromSearch(word) {
-  return co(function*() {
+  return csp.go(function*() {
     const url = movieSearchEndpoint + encodeURIComponent(word);
     const {Search: movieStubs} = yield get(url);
     return movieStubs;
@@ -41,7 +42,7 @@ function fetchMovies(movieStubs) {
 }
 
 function launchMovieSearch() {
-  return co(function*() {
+  return csp.go(function*() {
     const word = yield fetchRandomWord();
     const movieStubs = yield fetchMovieStubsFromSearch(word);
     if (movieStubs) {
@@ -52,22 +53,6 @@ function launchMovieSearch() {
     else {
       return yield launchMovieSearch();
     }
-  })
-}
-
-function launchMovieSearchOld() {
-  return new Promise(resolve => {
-    return fetchRandomWord().then(word => {
-      fetchMovieStubsFromSearch(word).then(movieStubs => {
-        if (movieStubs) {
-          const generateFinalResults = movies => ({word, movies});
-          fetchMovies(movieStubs).then(generateFinalResults).then(resolve);
-        }
-        else {
-          launchMovieSearchOld().then(resolve);
-        }
-      });
-    });
   });
 }
 
