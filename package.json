@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "browser-sync start --files 'src/index.html,src/*.js' --server 'src'"
+    "start": "browser-sync start --files 'app/index.html,app/*.js' --server 'app'"
   },
   "author": "Richard Harrington",
   "license": "BSD-2-Clause",
@@ -21,7 +21,7 @@
   },
   "jspm": {
     "directories": {
-      "baseURL": "src"
+      "baseURL": "app"
     },
     "dependencies": {
       "co": "npm:co@^4.5.4",
