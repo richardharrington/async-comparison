@@ -1,62 +1,58 @@
 import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'js/endpoints';
 
-function get(url, callback) {
-  const req = new XMLHttpRequest();
-  req.open('GET', url, true);
-  req.onload = () => {
-    const response = JSON.parse(req.response);
-    callback(response);
-  };
-  req.send();
-}
+const callbacksVersion = {
 
-function getParallel(urls, callback) {
-  let counter = urls.length;
-  let responses = [];
-  urls.forEach(url =>
-    get(url, (response) => {
-      responses.push(response);
-      counter--;
-      if (counter === 0) {
-        callback(responses);
-      }
-    })
-  );
-}
+  get(url, callback) {
+    const req = new XMLHttpRequest();
+    req.open('GET', url, true);
+    req.onload = () => {
+      const response = JSON.parse(req.response);
+      callback(response);
+    };
+    req.send();
+  },
 
-function fetchRandomWord(callback) {
-  get(randomWordEndpoint, ([{word}]) => callback(word));
-}
-
-function fetchMovieStubsFromSearch(word, callback) {
-  const url = movieSearchEndpoint + encodeURIComponent(word);
-  get(url, ({Search: movieStubs}) => callback(movieStubs));
-}
-
-function fetchMovies(movieStubs, callback) {
-  const urls = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
-  getParallel(urls, callback);
-}
-
-function launchMovieSearch(callback) {
-  fetchRandomWord(word => {
-    fetchMovieStubsFromSearch(word, movieStubs => {
-      if (movieStubs) {
-        const callbackFinalResults = movies => callback({word, movies});
-        fetchMovies(movieStubs, callbackFinalResults);
-      }
-      else {
-        launchMovieSearch(callback);
-      }
+  getParallel(urls, callback) {
+    let counter = urls.length;
+    let responses = [];
+    urls.forEach(url => {
+      this.get(url, (response) => {
+        responses.push(response);
+        counter--;
+        if (counter === 0) {
+          callback(responses);
+        }
+      })
     });
-  });
-}
+  },
 
-export default {
-  get,
-  getParallel,
-  fetchRandomWord,
-  fetchMovieStubsFromSearch,
-  fetchMovies,
-  launchMovieSearch
+  fetchRandomWord(callback) {
+    this.get(randomWordEndpoint, ([{word}]) => callback(word));
+  },
+
+  fetchMovieStubsFromSearch(word, callback) {
+    const url = movieSearchEndpoint + encodeURIComponent(word);
+    this.get(url, ({Search: movieStubs}) => callback(movieStubs));
+  },
+
+  fetchMovies(movieStubs, callback) {
+    const urls = movieStubs.map(movieStub => movieEndpoint + movieStub.imdbID);
+    this.getParallel(urls, callback);
+  },
+
+  launchMovieSearch(callback) {
+    fetchRandomWord(word => {
+      this.fetchMovieStubsFromSearch(word, movieStubs => {
+        if (movieStubs) {
+          const callbackFinalResults = movies => callback({word, movies});
+          this.fetchMovies(movieStubs, callbackFinalResults);
+        }
+        else {
+          this.launchMovieSearch(callback);
+        }
+      });
+    });
+  }
 };
+
+export default callbacksVersion;

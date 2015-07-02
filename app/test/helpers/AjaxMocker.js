@@ -1,4 +1,4 @@
-let model = {responseMap: {}};
+let model = {responseStackMap: {}};
 let cachedXMLHttpRequest = window.XMLHttpRequest;
 
 function MockXMLHttpRequest() {
@@ -6,25 +6,26 @@ function MockXMLHttpRequest() {
 
 MockXMLHttpRequest.prototype = {
   open(_, url) {
-    const response = model.responseMap[url];
-    if (typeof response === 'undefined') {
+    const responseStack = model.responseStackMap[url];
+    if (!responseStack || responseStack.length === 0) {
       throw new Error('call to unregistered url; you need to register url and response with AjaxMocker.registerUrlResponsePairs');
     }
-    this.response = response;
+    this.response = responseStack.pop();
   },
   send() {
     setTimeout(() => this.onload(this.response), 0);
   }
 }
 
-function registerUrlResponsePairs(responsePairs) {
-  for (let url in responsePairs) {
-    model.responseMap[url] = JSON.stringify(responsePairs[url]);
-  }
+function registerUrlResponsePairs(...responsePairs) {
+  responsePairs.forEach(([url, response]) => {
+    model.responseStackMap[url] = model.responseStackMap[url] || [];
+    model.responseStackMap[url].push(JSON.stringify(response));
+  });
 }
 
 function install() {
-  model.responseMap = {};
+  model.responseStackMap = {};
   window.XMLHttpRequest = MockXMLHttpRequest;
 }
 
