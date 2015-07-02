@@ -52,4 +52,11 @@ function launchMovieSearch(callback) {
   });
 }
 
-export default { launchMovieSearch };
+export default {
+  get,
+  getParallel,
+  fetchRandomWord,
+  fetchMovieStubsFromSearch,
+  fetchMovies,
+  launchMovieSearch
+};

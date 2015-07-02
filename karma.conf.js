@@ -20,8 +20,8 @@ module.exports = function(config) {
 
     jspm: {
         // Edit this to your needs
-        loadFiles: ['spec/*.js'],
-        serveFiles: ['js/*.js']
+        loadFiles: ['test/**/*.js'],
+        serveFiles: ['js/**/*.js']
     },
 
 
