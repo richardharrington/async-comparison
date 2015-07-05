@@ -1,6 +1,6 @@
 import { randomWordEndpoint, movieSearchEndpoint, movieEndpoint } from 'js/endpoints';
 
-const callbacksVersion = {
+export default {
 
   get(url, callback) {
     const req = new XMLHttpRequest();
@@ -41,7 +41,7 @@ const callbacksVersion = {
   },
 
   launchMovieSearch(callback) {
-    fetchRandomWord(word => {
+    this.fetchRandomWord(word => {
       this.fetchMovieStubsFromSearch(word, movieStubs => {
         if (movieStubs) {
           const callbackFinalResults = movies => callback({word, movies});
@@ -54,5 +54,3 @@ const callbacksVersion = {
     });
   }
 };
-
-export default callbacksVersion;

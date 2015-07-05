@@ -34,51 +34,65 @@ describe("Ajax", () => {
 });
 
 describe("basic fetch building blocks", () => {
+  describe("fetchRandomWord", () => {
+    beforeEach(() => spyOn(callbacksVersion, 'get'));
 
-  // each of these functions should have 2 tests: one that
-  // makes sure that the right url got pinged, and one that
-  // makes sure that the response is processed correctly.
-
-  // TODO: another test showing that the right url got pinged.
-
-  it("fetches a random word", (done) => {
-    spyOn(callbacksVersion, "get").and.callFake((_, callback) => {
-      callback([{word: "aardvark"}]);
+    it("makes the right call", () => {
+      callbacksVersion.fetchRandomWord(() => {});
+      expect(callbacksVersion.get).toHaveBeenCalledWith(randomWordEndpoint, jasmine.any(Function));
     });
-    callbacksVersion.fetchRandomWord((word) => {
-      expect(word).toEqual("aardvark");
-      done();
-    });
-  });
 
-  // TODO: another test showing that the right url got pinged.
-
-  it("fetches movie stubs", (done) => {
-    spyOn(callbacksVersion, "get").and.callFake((_, callback) => {
-      callback({Search: "Hi I'm the movie stubs you're looking for"});
-    });
-    callbacksVersion.fetchMovieStubsFromSearch("aardvark", (movieStubs) => {
-      expect(movieStubs).toEqual("Hi I'm the movie stubs you're looking for");
-      done();
+    it("processes the result correctly", (done) => {
+      callbacksVersion.get.and.callFake((_, callback) => {
+        callback([{word: "aardvark"}]);
+      });
+      callbacksVersion.fetchRandomWord((word) => {
+        expect(word).toEqual("aardvark");
+        done();
+      });
     });
   });
 
-  // TODO: another test (the only useful test, really) showing that the right url got pinged.
+  describe("fetchMovieStubsFromSearch", () => {
+    beforeEach(() => spyOn(callbacksVersion, 'get'));
 
-  it("fetches movies", (done) => {
-    // const movieStubs = [{imdbID: "a"}, {imdbID: "b"}, {imdbID: "c"}];
-    // AjaxMocker.registerUrlResponsePairs(
-    //   [movieEndpoint + "a", {movie: "I'm A movie."}],
-    //   [movieEndpoint + "b", {movie: "I'm B movie."}],
-    //   [movieEndpoint + "c", {movie: "I'm C movie."}]
-    // );
-    spyOn(callbacksVersion, "getParallel").and.callFake((_, callback) => {
-      callback([{movie: "I'm A movie."}, {movie: "I'm B movie."}, {movie: "I'm C movie."}])
+    it("makes the right call", () => {
+      callbacksVersion.fetchMovieStubsFromSearch('aardvark', () => {});
+      expect(callbacksVersion.get).toHaveBeenCalledWith(movieSearchEndpoint + 'aardvark', jasmine.any(Function));
     });
-    callbacksVersion.fetchMovies(["this is an irrelevant arg"], (movies) => {
-      expect(movies).toEqual([{movie: "I'm A movie."}, {movie: "I'm B movie."}, {movie: "I'm C movie."}]);
-      done();
+
+    it("processes the results correctly", (done) => {
+      callbacksVersion.get.and.callFake((_, callback) => {
+        callback({Search: "Hi I'm the movie stubs you're looking for"});
+      });
+      callbacksVersion.fetchMovieStubsFromSearch("aardvark", (movieStubs) => {
+        expect(movieStubs).toEqual("Hi I'm the movie stubs you're looking for");
+        done();
+      });
     });
+
+  });
+
+  describe("fetchMovies", () => {
+    beforeEach(() => spyOn(callbacksVersion, 'getParallel'));
+
+    it("makes the correct call", () => {
+      const movieStubs = [{imdbID: "abc"}, {imdbID: "def"}, {imdbID: "ghi"}];
+      callbacksVersion.fetchMovies(movieStubs, () => {});
+      const urls = ["abc", "def", "ghi"].map(id => movieEndpoint + id);
+      expect(callbacksVersion.getParallel).toHaveBeenCalledWith(urls, jasmine.any(Function));
+    });
+
+    it("processes the results correctly (i.e. not at all)", (done) => {
+      callbacksVersion.getParallel.and.callFake((_, callback) => {
+        callback("the bare results");
+      });
+      callbacksVersion.fetchMovies([], (movies) => {
+        expect(movies).toEqual("the bare results");
+        done();
+      });
+    });
+
   });
 
 });
