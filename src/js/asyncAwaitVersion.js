@@ -14,7 +14,6 @@ function get(url) {
 
 async function getParallel(urls) {
   return Promise.all(urls.map(get));
-  //return await urls.map(get);
 }
 
 async function fetchRandomWord() {

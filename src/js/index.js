@@ -20,11 +20,3 @@ co(function*() {
 (async function() {
   log("async/await:", await asyncAwaitVersion.launchMovieSearch());
 })();
-
-// Something's wrong with this. Async/await seems to be working
-// but is returning promises, not movies.
-
-// ok, working now but had to put Promise.all in getParallel.
-// is there a better way using async/await?
-
-
