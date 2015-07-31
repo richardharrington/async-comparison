@@ -52,22 +52,6 @@ function launchMovieSearch() {
     else {
       return yield launchMovieSearch();
     }
-  })
-}
-
-function launchMovieSearchOld() {
-  return new Promise(resolve => {
-    return fetchRandomWord().then(word => {
-      fetchMovieStubsFromSearch(word).then(movieStubs => {
-        if (movieStubs) {
-          const generateFinalResults = movies => ({word, movies});
-          fetchMovies(movieStubs).then(generateFinalResults).then(resolve);
-        }
-        else {
-          launchMovieSearchOld().then(resolve);
-        }
-      });
-    });
   });
 }
 
