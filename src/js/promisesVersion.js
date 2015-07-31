@@ -29,18 +29,16 @@ function fetchMovies(movieStubs) {
 }
 
 function launchMovieSearch() {
-  return new Promise(resolve => {
-    return fetchRandomWord().then(word => {
-      fetchMovieStubsFromSearch(word).then(movieStubs => {
-        if (movieStubs) {
-          const generateFinalResults = movies => ({word, movies});
-          fetchMovies(movieStubs).then(generateFinalResults).then(resolve);
-        }
-        else {
-          launchMovieSearch().then(resolve);
-        }
-      });
-    });
+  return fetchRandomWord().then(word => {
+    return fetchMovieStubsFromSearch(word).then(movieStubs => ({word, movieStubs}));
+  }).then(({word, movieStubs}) => {
+    if (movieStubs) {
+      const generateFinalResults = movies => ({word, movies});
+      return fetchMovies(movieStubs).then(generateFinalResults);
+    }
+    else {
+      return launchMovieSearch();
+    }
   });
 }
 
