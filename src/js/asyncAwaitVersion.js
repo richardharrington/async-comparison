@@ -12,7 +12,7 @@ function get(url) {
   });
 }
 
-async function getParallel(urls) {
+function getParallel(urls) {
   return Promise.all(urls.map(get));
 }
 
